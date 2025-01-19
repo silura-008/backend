@@ -1,8 +1,11 @@
 from datetime import date
 
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+
+import requests
+from rest_framework.permissions import AllowAny
 
 from .models import Profile, Preference, MoodLog, Task, Ratio
 from .serializers import ProfileSerializer, PreferenceSerializer, MoodLogSerializer, TaskSerializer, RatioSerializer
@@ -122,3 +125,30 @@ def update_tasks(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+ 
+ # chat
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def chat(request):
+    
+    #user = request.user.id
+    user_id = "user123"
+    message = request.data.get("message")
+    
+    rasa_url = "http://localhost:5005/webhooks/rest/webhook"
+    payload = {
+        "sender":user_id,
+        "message":message
+    }
+    headers={
+        "Content-type":"application/json"
+    }
+    
+    try:
+        response = requests.post(rasa_url,json=payload,headers=headers).json()
+        return Response(response,status=200)
+    except:
+        return Response({"got an error"},status=500)
+    
+ 

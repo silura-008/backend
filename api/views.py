@@ -51,7 +51,8 @@ def get_ratio(request, user):
 
 # MoodLog history
 @api_view(['GET']) 
-def get_moodhistory(request, user):
+def get_moodhistory(request):
+    user = request.user
     moodhistory = MoodLog.objects.filter(user=user).order_by('-date')[:7]
     serializer = MoodLogSerializer(moodhistory, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -59,10 +60,11 @@ def get_moodhistory(request, user):
 # Moodlog entry
 @api_view(['POST'])
 def add_moodlog(request):
-    user = request.data["user"]
+    user = request.user
     exsiting_log = MoodLog.objects.filter(user=user, date=date.today()).first()
     if(exsiting_log):
         data = request.data
+        data['user']= user.id
         serializer = MoodLogSerializer(exsiting_log,data=data)
         if serializer.is_valid():
             serializer.save()
@@ -70,6 +72,7 @@ def add_moodlog(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
         data = request.data
+        data['user']= user.id
         serializer = MoodLogSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -87,33 +90,33 @@ def create_tasks():
         "Talk to a friend":False
     }
 @api_view(['GET']) 
-def get_tasks(request, user): 
-
+def get_tasks(request): 
+    user = request.user
     expired_task = Task.objects.filter(user=user).order_by('date').first()
-    if(expired_task.date < date.today()):
-        expired_task.delete()
     existing_task = Task.objects.filter(user=user,date=date.today()).first()
+    if(expired_task):
+        if(expired_task.date < date.today()):
+            expired_task.delete()   
 
     if(existing_task):
-        if(existing_task.rate != 100):
-            serializer = TaskSerializer(existing_task)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        else :
-            return Response({"completed":"Tasks completed for today"},status=status.HTTP_200_OK)
+        serializer = TaskSerializer(existing_task)
+        return Response(serializer.data,status=status.HTTP_200_OK)
     else:
-        new_task = Task.objects.create(user_id=user,date=date.today(),tasks=create_tasks())
+        new_task = Task.objects.create(user_id=user.id,date=date.today(),tasks=create_tasks())
         serializer = TaskSerializer(new_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 # Task updating
 @api_view(['PUT'])
-def update_tasks(request, user):
+def update_tasks(request):
+    user = request.user
     try:
         task = Task.objects.get(user=user,date= date.today())
     except Task.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
     data = request.data
+    data['user']= user.id
     serializer = TaskSerializer(task, data=data)
     if serializer.is_valid():
         serializer.save()

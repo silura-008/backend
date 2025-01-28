@@ -43,7 +43,8 @@ def update_preference(request, user):
 
 # Ratio
 @api_view(['GET']) 
-def get_ratio(request, user):
+def get_ratio(request):
+    user = request.user
     try:
         ratio = Ratio.objects.get(user=user)
     except Ratio.DoesNotExist:

@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import update_profile,update_preference,get_ratio,get_moodhistory,add_moodlog,get_tasks,update_tasks,chat
+from .views import update_profile,update_preference,get_ratio,get_moodhistory,add_moodlog,get_tasks,update_tasks,chat,get_conversation
 
 urlpatterns = [
     path('auth/',include('djoser.urls')),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('get_moodhistory/', get_moodhistory),
     path('get_tasks/',get_tasks),
     path('add_moodlog/', add_moodlog),
+    path('get_conversation/',get_conversation),
     path('chat/', chat),
     
     

@@ -82,13 +82,13 @@ class Profile(models.Model):
         related_name='profile'
     )
     name = models.CharField(max_length=50, blank=True,null = True)
+    conversation = models.JSONField(default=list)
     # avatar = models.ImageField(
     #     upload_to='avatars/',
     #     default='avatars/default.png'
     # )
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(auto_now=True)
-    # preference = models.ForeignKey('Preference', on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         if not self.name and self.user.email:

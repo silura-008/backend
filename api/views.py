@@ -106,7 +106,7 @@ def get_tasks(request):
         serializer = TaskSerializer(existing_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
     else:
-        new_task = Task.objects.create(user_id=user.id,date=date.today(),tasks=create_tasks())
+        new_task = Task.objects.create(user=user.id,date=date.today(),tasks=create_tasks())
         serializer = TaskSerializer(new_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -128,18 +128,18 @@ def update_tasks(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
  
- # chat
+# chat
+RASA_URL = "http://localhost:5005/webhooks/rest/webhook"
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def chat(request):
     
-    #user = request.user.id
-    user_id = "user123"
+    # user = request.user.id
+    user = 3
     message = request.data.get("message")
     
-    rasa_url = "http://localhost:5005/webhooks/rest/webhook"
     payload = {
-        "sender":user_id,
+        "sender":user,
         "message":message
     }
     headers={
@@ -147,9 +147,23 @@ def chat(request):
     }
     
     try:
-        response = requests.post(rasa_url,json=payload,headers=headers).json()
+        response = requests.post(RASA_URL,json=payload,headers=headers).json()
+        # profile = Profile.objects.filter(user=user).first()  
+        # profile.conversation.append({})
         return Response(response,status=200)
     except:
         return Response({"got an error"},status=500)
     
- 
+@api_view(['GET'])
+def get_conversation(request):
+    user = request.user
+    profile = Profile.objects.filter(user=user).first()  
+    if profile:
+        return Response({'conversation': profile.conversation}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+
+# @permission_classes([AllowAny])

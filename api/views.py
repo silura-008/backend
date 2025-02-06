@@ -12,6 +12,8 @@ from .serializers import ProfileSerializer, PreferenceSerializer, MoodLogSeriali
 
 
 # Profile
+
+
 @api_view(['PUT'])
 def update_profile(request, user):
     try:
@@ -106,7 +108,7 @@ def get_tasks(request):
         serializer = TaskSerializer(existing_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
     else:
-        new_task = Task.objects.create(user=user.id,date=date.today(),tasks=create_tasks())
+        new_task = Task.objects.create(user=user,date=date.today(),tasks=create_tasks())
         serializer = TaskSerializer(new_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -132,7 +134,7 @@ def update_tasks(request):
 RASA_URL = "http://localhost:5005/webhooks/rest/webhook"
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def chat(request):
+def chatt(request):
     
     # user = request.user.id
     user = 3
@@ -154,15 +156,49 @@ def chat(request):
     except:
         return Response({"got an error"},status=500)
     
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def chat(request):
+    
+    user = request.user
+    try:
+        profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    
+    messege = request.data
+    if not isinstance(profile.conversation, list):
+        profile.conversation = []
+    profile.conversation.append(messege["newMsg"])
+    profile.save()
+    return Response({"added messege to conversation"}, status=status.HTTP_201_CREATED)
+  
+
+  
+@api_view(['POST'])
+def clear_conversation(request):
+    user = request.user
+    profile = Profile.objects.filter(user=user).first()  
+    if profile:
+        profile.conversation = []
+        profile.save()
+        return Response({'conversation cleared'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+   
+   
 @api_view(['GET'])
 def get_conversation(request):
     user = request.user
     profile = Profile.objects.filter(user=user).first()  
     if profile:
+         
         return Response({'conversation': profile.conversation}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
     
+
 
 
 

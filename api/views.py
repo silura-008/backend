@@ -12,36 +12,66 @@ from .serializers import ProfileSerializer, PreferenceSerializer, MoodLogSeriali
 
 
 # Profile
-
-
-@api_view(['PUT'])
-def update_profile(request, user):
+@api_view(['GET']) 
+def get_profile(request):
+    user = request.user
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
-    data = request.data
-    serializer = ProfileSerializer(profile, data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({
+    "name": profile.name,
+    "email":profile.user.email,
+    "country": profile.country,
+  }, status=status.HTTP_200_OK)
 
-# Preference
 @api_view(['PUT'])
-def update_preference(request, user):
+def update_profile(request):
+    user = request.user
+    try:
+        profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
     try:
         preference = Preference.objects.get(user=user)
     except Preference.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
-    data = request.data
-    serializer = PreferenceSerializer(preference, data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    profdata = {
+               "user":user.id,
+               "name" :request.data["name"],
+               "country":request.data["country"]
+               }
+    prefdata = {
+               "user":user.id,
+               "on_happy":request.data["on_happy"],
+               "on_sad" :request.data["on_sad"],
+               "on_angry": request.data["on_angry"],
+               "on_anxious": request.data["on_anxious"],
+               "on_fear": request.data["on_fear"]
+               }
+    profserializer = ProfileSerializer(profile, data=profdata)
+    prefserializer = PreferenceSerializer(preference, data=prefdata)
+    if profserializer.is_valid() and prefserializer.is_valid():
+        profserializer.save()
+        prefserializer.save()
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Preference
+
+@api_view(['GET']) 
+def get_preference(request):
+    user = request.user
+    try:
+        preference = Preference.objects.get(user=user)
+    except Preference.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = PreferenceSerializer(preference)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # Ratio
 @api_view(['GET']) 

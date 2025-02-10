@@ -82,6 +82,7 @@ class Profile(models.Model):
         related_name='profile'
     )
     name = models.CharField(max_length=50, blank=True,null = True)
+    country = models.TextField(blank=True, null=True,default="Country")
     conversation = models.JSONField(default=list)
     # avatar = models.ImageField(
     #     upload_to='avatars/',

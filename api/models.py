@@ -57,7 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 # Preference
 
-DEFAULT_PREFERENCES = {"video": True, "article": True, "story": True}
+DEFAULT_PREFERENCES = {"Visual-Based": True, "Audio_based": True, "Text-based": True,"Physical-Activities": True}
 
 class Preference(models.Model):
     user = models.OneToOneField(
@@ -65,7 +65,6 @@ class Preference(models.Model):
         on_delete=models.CASCADE,
         related_name='preference'
     )
-    on_happy = models.JSONField(default=DEFAULT_PREFERENCES)
     on_sad = models.JSONField(default=DEFAULT_PREFERENCES)
     on_angry = models.JSONField(default=DEFAULT_PREFERENCES)
     on_anxious = models.JSONField(default=DEFAULT_PREFERENCES)

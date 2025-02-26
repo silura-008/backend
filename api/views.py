@@ -46,7 +46,6 @@ def update_profile(request):
                }
     prefdata = {
                "user":user.id,
-               "on_happy":request.data["on_happy"],
                "on_sad" :request.data["on_sad"],
                "on_angry": request.data["on_angry"],
                "on_anxious": request.data["on_anxious"],

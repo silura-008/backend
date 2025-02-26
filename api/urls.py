@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import get_profile,get_preference,update_profile,update_preference,get_ratio,get_moodhistory,add_moodlog,get_tasks,update_tasks,chat,get_conversation,clear_conversation
+from .views import get_profile,get_preference,update_profile,get_ratio,get_moodhistory,add_moodlog,get_tasks,update_tasks,chat,get_conversation,clear_conversation
 
 urlpatterns = [
     path('auth/',include('djoser.urls')),

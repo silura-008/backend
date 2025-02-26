@@ -162,48 +162,38 @@ def update_tasks(request):
  
 # chat
 RASA_URL = "http://localhost:5005/webhooks/rest/webhook"
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def chatt(request):
-    
-    # user = request.user.id
-    user = 3
-    message = request.data.get("message")
-    
-    payload = {
-        "sender":user,
-        "message":message
-    }
-    headers={
-        "Content-type":"application/json"
-    }
-    
+
+def send_message_to_rasa(user_id, message):
+    payload = {"sender": str(user_id), "message": message}
     try:
-        response = requests.post(RASA_URL,json=payload,headers=headers).json()
-        # profile = Profile.objects.filter(user=user).first()  
-        # profile.conversation.append({})
-        return Response(response,status=200)
-    except:
-        return Response({"got an error"},status=500)
-    
+        response = requests.post(RASA_URL, json=payload, timeout=5)
+        response_data = response.json()
+        return response_data 
+    except requests.exceptions.RequestException as e:
+        return False
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def chat(request):
     
+    # user = request.user.id
     user = request.user
+    user_message = request.data.get("message")
+    
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    
-    messege = request.data
-    if not isinstance(profile.conversation, list):
-        profile.conversation = []
-    profile.conversation.append(messege["newMsg"])
-    profile.save()
-    return Response({"added messege to conversation"}, status=status.HTTP_201_CREATED)
-  
+
+
+    bot_response = send_message_to_rasa(user.id, user_message)
+
+    if bot_response :
+        profile.append_to_conversation("user", user_message)
+        profile.append_to_conversation("bot", bot_response["text"])
+        return Response({'user':user_message,'bot':bot_response["text"]}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Could not connect to chatbot.'}, status=status.HTTP_404_NOT_FOUND)
 
   
 @api_view(['POST'])
@@ -233,3 +223,6 @@ def get_conversation(request):
 
 
 # @permission_classes([AllowAny])
+
+
+[{"id": 1, "sender": "user", "text": "hi", "timestamp": "2025-02-06T15:57:51.817Z", "time": "09:27 PM"}, {"id": 2, "sender": "user", "text": "how are you", "timestamp": "2025-02-06T15:57:57.197Z", "time": "09:27 PM"}, {"id": 3, "sender": "user", "text": "gotta go", "timestamp": "2025-02-06T15:58:02.573Z", "time": "09:28 PM"}, {"id": 1, "sender": "user", "text": "hlo", "timestamp": "2025-02-10T17:31:16.604Z", "time": "11:01 PM"}]

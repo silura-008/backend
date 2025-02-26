@@ -2,7 +2,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django.utils.timezone import now
 from django.conf import settings
-from datetime import date
+from datetime import date, datetime,timezone
+
 
 # User
 
@@ -90,6 +91,20 @@ class Profile(models.Model):
     # )
     created_at = models.DateTimeField(default=now)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def append_to_conversation(self, sender, text):
+        
+        if not isinstance(self.conversation, list):
+            self.conversation = []
+        message = {
+            "id": len(self.conversation) + 1,
+            "sender": sender,
+            "text": text,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "time": datetime.now().strftime("%I:%M %p"),
+        }
+        self.conversation.append(message)
+        self.save()
 
     def save(self, *args, **kwargs):
         if not self.name and self.user.email:

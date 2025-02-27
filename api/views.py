@@ -167,7 +167,7 @@ def send_message_to_rasa(user_id, message):
     try:
         response = requests.post(RASA_URL, json=payload, timeout=5)
         response_data = response.json()
-        return response_data 
+        return response_data
     except requests.exceptions.RequestException as e:
         return False
 
@@ -177,7 +177,7 @@ def chat(request):
     
     # user = request.user.id
     user = request.user
-    user_message = request.data.get("message")
+    user_message = request.data["newMsg"]["text"]
     
     try:
         profile = Profile.objects.get(user=user)
@@ -186,11 +186,10 @@ def chat(request):
 
 
     bot_response = send_message_to_rasa(user.id, user_message)
-
     if bot_response :
         profile.append_to_conversation("user", user_message)
-        profile.append_to_conversation("bot", bot_response["text"])
-        return Response({'user':user_message,'bot':bot_response["text"]}, status=status.HTTP_200_OK)
+        profile.append_to_conversation("bot", bot_response[0]["text"])
+        return Response({'user':user_message,'bot':bot_response[0]["text"]}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Could not connect to chatbot.'}, status=status.HTTP_404_NOT_FOUND)
 

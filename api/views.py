@@ -226,15 +226,15 @@ def get_initial(request):
             return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
     
     preference_instance = Preference.objects.filter(user=user).first()  
-    preferences = {
-        'on_sad': [key for key, value in preference_instance.on_sad.items() if value],
-        'on_anger': [key for key, value in preference_instance.on_angry.items() if value],
-        'on_anxious': [key for key, value in preference_instance.on_anxious.items() if value],
-        'on_fear': [key for key, value in preference_instance.on_fear.items() if value],
+    preference = {
+        'sad': [key for key, value in preference_instance.on_sad.items() if value],
+        'anger': [key for key, value in preference_instance.on_angry.items() if value],
+        'anxious': [key for key, value in preference_instance.on_anxious.items() if value],
+        'fear': [key for key, value in preference_instance.on_fear.items() if value],
     }
     ratio = Ratio.objects.get(user=user)
     return Response({"personality": ratio.get_max_ratio_emotion(),
-                     "preferences":preferences,
+                     "preference":preference,
                      "helpline":get_hotline(profile.country)}
     , status=status.HTTP_200_OK)
 

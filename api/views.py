@@ -1,5 +1,5 @@
 from datetime import date
-
+import random
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -116,14 +116,72 @@ def add_moodlog(request):
 
 
 # Task getting
-def create_tasks():
-    return {
-        "Take a walk":False,
-        "Read a book":False,
-        "Water a plant":False,
-        "Excercise 30 minuts":False,
-        "Talk to a friend":False
+
+
+
+def create_tasks(personality):
+    tasks = {
+        "new": [  
+            "Engage in light movement like stretching or walking",  
+            "Do a 5-minute deep breathing exercise",  
+            "Reflect on three good things that happened today",  
+            "Maintain a simple journal entry about your thoughts",  
+            "Spend a few minutes in mindful silence without distractions",  
+            "Observe and describe your surroundings to ground yourself",  
+            "Engage in a short guided meditation",  
+            "Write down a small goal for the day and accomplish it",  
+            "Organize a small part of your space",  
+            "Listen to a calming, neutral podcast"
+        ],
+        "joy": [ 
+            "Do an activity that brings you joy (reading, listening to music, etc.)",  
+            "Engage in light social interaction with someone you enjoy talking to",  
+            "Recall a happy memory and write it down",  
+            "Do a creative task that doesn't feel forced (sketching, casual writing)",  
+            "Take a moment to deeply enjoy something small (a breeze, a song, a scent)",  
+            "Practice active appreciation—verbalize or note what you like about the moment",  
+            "Strengthen self-compassion by writing down kind words to yourself",  
+            "Send a positive message to a friend or acquaintance",  
+            "Spend a few minutes in natural sunlight"
+        ],
+        "sorrow": [   
+            "Talk to a trusted person about how you're feeling",  
+            "Write down your thoughts and emotions without filtering them",  
+            "Do controlled deep breathing to regulate distress",  
+            "Engage in a simple, repetitive physical activity like pacing or stretching",    
+            "Use the 'name it to tame it' method—verbalize exactly what you're feeling",  
+            "Try gentle grounding—touch a textured object and describe it in detail",  
+            "Allow yourself to cry if needed, then focus on deep breaths afterward",  
+            "Engage in a short distraction task (sorting objects, organizing files)",  
+            "Repeat a comforting phrase or affirmation to yourself"
+        ],
+        "fury": [  
+            "Write down your frustration in detail and then tear or delete it",  
+            "Engage in a controlled physical release (walking, push-ups, or squeezing a stress ball)",  
+            "Do progressive muscle relaxation—clench and release your fists slowly",  
+            "Practice cognitive distancing—ask, 'Will this matter in a week?'",  
+            "Redirect energy into an intentional task (solving a puzzle, organizing)",  
+            "Listen to neutral instrumental music to slow down thoughts",  
+            "Step outside and focus on deep, slow breathing",  
+        ],
+        "nervous": [
+            "Identify the worst-case scenario and rationalize it",  
+            "Write down what's making you anxious and separate fact from assumption",  
+            "Engage in a repetitive, calming activity (tapping fingers, doodling, sorting objects)",  
+            "Listen to a structured guided breathing or grounding exercise",  
+            "Hold a textured object and describe its feeling to yourself",  
+            "Challenge irrational thoughts with logical counterarguments",  
+            "Take a slow, deliberate walk while focusing on your steps",  
+            "Redirect focus by completing a simple mental task (math problem, word puzzle)",  
+            "Talk to someone who can provide reassurance and logical perspective"
+        ],
     }
+    
+    tasks_by_personality = tasks.get(personality, tasks["new"])
+    selected_tasks = random.sample(tasks_by_personality, 5)
+    return {task: False for task in selected_tasks}
+
+
 @api_view(['GET']) 
 def get_tasks(request): 
     user = request.user
@@ -137,7 +195,8 @@ def get_tasks(request):
         serializer = TaskSerializer(existing_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
     else:
-        new_task = Task.objects.create(user=user,date=date.today(),tasks=create_tasks())
+        ratio = Ratio.objects.get(user=user)
+        new_task = Task.objects.create(user=user,date=date.today(),tasks=create_tasks(ratio.get_max_ratio_emotion()))
         serializer = TaskSerializer(new_task)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
@@ -216,7 +275,7 @@ def get_conversation(request):
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
     
 # Rasa 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def get_initial(request):
     user = request.data.user_id

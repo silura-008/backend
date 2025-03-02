@@ -259,6 +259,7 @@ def clear_conversation(request):
     if profile:
         profile.conversation = []
         profile.save()
+        res = send_message_to_rasa(user.id,"/restart")
         return Response({'conversation cleared'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)

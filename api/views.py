@@ -57,7 +57,7 @@ def update_profile(request):
         profserializer.save()
         prefserializer.save()
         return Response({'success': True}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error'}, status=status.HTTP_400_BAD_REQUEST)
 
 # Preference
 
@@ -172,7 +172,6 @@ def send_message_to_rasa(user_id, message):
         return False
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
 def chat(request):
     
     # user = request.user.id
@@ -216,11 +215,77 @@ def get_conversation(request):
     else:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
     
+# Rasa 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_initial(request):
+    user = request.data.user_id
+    profile = Profile.objects.filter(user=user).first()
+
+    if not profile:
+            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    preference_instance = Preference.objects.filter(user=user).first()  
+    preferences = {
+        'on_sad': [key for key, value in preference_instance.on_sad.items() if value],
+        'on_anger': [key for key, value in preference_instance.on_angry.items() if value],
+        'on_anxious': [key for key, value in preference_instance.on_anxious.items() if value],
+        'on_fear': [key for key, value in preference_instance.on_fear.items() if value],
+    }
+    ratio = Ratio.objects.get(user=user)
+    return Response({"personality": ratio.get_max_ratio_emotion(),
+                     "preferences":preferences,
+                     "helpline":get_hotline(profile.country)}
+    , status=status.HTTP_200_OK)
 
 
 
+country_emergency_numbers = {
+    'Albania': '112',
+    'Argentina': '135',
+    'Australia': '13 11 14',
+    'Austria': '142',
+    'Belgium': '106',
+    'Brazil': '188',
+    'Canada': '1-833-456-4566',
+    'Chile': '600-360-7777',
+    'China': '400-161-9995',
+    'Colombia': '1-800-518-2211',
+    'Denmark': '70 201 201',
+    'Finland': '09-2525 0111',
+    'France': '01 45 39 40 00',
+    'Germany': '0800 111 0 111',
+    'Iceland': '1717',
+    'India': '91-22-2772 6771',
+    'Ireland': '116 123',
+    'Israel': '1201',
+    'Italy': '199 284 284',
+    'Japan': '03-5774-0992',
+    'Korea, South': '1588-9191',
+    'Mexico': '800-911-2000',
+    'Nepal': '01-4287333',
+    'Netherlands': '0900 0113',
+    'New Zealand': '0800 543 354',
+    'Norway': '116 123',
+    'Pakistan': '021-3481 4450',
+    'Singapore': '1800-221-4444',
+    'South Africa': '0861 322 322',
+    'Spain': '717-003-717',
+    'Taiwan': '1995',
+    'United Kingdom': '116 123',
+    'United States': '988',
+}
+
+def get_hotline(country):
+    country = country.strip().lower()
+    
+    for key, value in country_emergency_numbers.items():
+        if country in key.lower():
+            return value
+    return "988"
+       
 
 # @permission_classes([AllowAny])
 
 
-[{"id": 1, "sender": "user", "text": "hi", "timestamp": "2025-02-06T15:57:51.817Z", "time": "09:27 PM"}, {"id": 2, "sender": "user", "text": "how are you", "timestamp": "2025-02-06T15:57:57.197Z", "time": "09:27 PM"}, {"id": 3, "sender": "user", "text": "gotta go", "timestamp": "2025-02-06T15:58:02.573Z", "time": "09:28 PM"}, {"id": 1, "sender": "user", "text": "hlo", "timestamp": "2025-02-10T17:31:16.604Z", "time": "11:01 PM"}]
+# [{"id": 1, "sender": "user", "text": "hi", "timestamp": "2025-02-06T15:57:51.817Z", "time": "09:27 PM"}, {"id": 2, "sender": "user", "text": "how are you", "timestamp": "2025-02-06T15:57:57.197Z", "time": "09:27 PM"}, {"id": 3, "sender": "user", "text": "gotta go", "timestamp": "2025-02-06T15:58:02.573Z", "time": "09:28 PM"}, {"id": 1, "sender": "user", "text": "hlo", "timestamp": "2025-02-10T17:31:16.604Z", "time": "11:01 PM"}]

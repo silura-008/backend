@@ -200,3 +200,15 @@ class Ratio(models.Model):
 
     def __str__(self):
             return f"Ratios for {self.user.email}"
+    
+    def get_max_ratio_emotion(self):
+        if self.log_count > 3:
+            ratios = {
+                'joy': self.happy_ratio,
+                'sorrow': self.sad_ratio,
+                'nervouse': self.anxious_ratio,
+                'fury': self.angry_ratio,
+            }
+            max_emotion = max(ratios, key=ratios.get)
+            return max_emotion
+        return "new"

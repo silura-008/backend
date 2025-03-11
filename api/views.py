@@ -279,7 +279,8 @@ def get_conversation(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_initial(request):
-    user = request.data.user_id
+    print(request.data)
+    user = request.data['user_id']
     profile = Profile.objects.filter(user=user).first()
 
     if not profile:

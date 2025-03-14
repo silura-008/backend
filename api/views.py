@@ -7,8 +7,8 @@ from rest_framework.response import Response
 import requests
 from rest_framework.permissions import AllowAny
 
-from .models import Profile, Preference, MoodLog, Task, Ratio
-from .serializers import ProfileSerializer, PreferenceSerializer, MoodLogSerializer, TaskSerializer, RatioSerializer
+from .models import Profile, Preference, MoodLog, Task, Ratio, Feedback
+from .serializers import ProfileSerializer, PreferenceSerializer, MoodLogSerializer, TaskSerializer, RatioSerializer, FeedbackSerializer
 
 
 # Profile
@@ -350,3 +350,12 @@ def get_hotline(country):
 
 
 # [{"id": 1, "sender": "user", "text": "hi", "timestamp": "2025-02-06T15:57:51.817Z", "time": "09:27 PM"}, {"id": 2, "sender": "user", "text": "how are you", "timestamp": "2025-02-06T15:57:57.197Z", "time": "09:27 PM"}, {"id": 3, "sender": "user", "text": "gotta go", "timestamp": "2025-02-06T15:58:02.573Z", "time": "09:28 PM"}, {"id": 1, "sender": "user", "text": "hlo", "timestamp": "2025-02-10T17:31:16.604Z", "time": "11:01 PM"}]
+
+@api_view(['POST'])
+def submit_feedback(request):
+    data = request.data
+    serializer = FeedbackSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

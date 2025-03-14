@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile,Preference,MoodLog,Task,Ratio
+from .models import Profile,Preference,MoodLog,Task,Ratio, Feedback
 
 from djoser.serializers import UserCreateSerializer
 from django.contrib.auth import get_user_model
@@ -16,6 +16,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta :
         model = Profile
         fields = ("id", "user", "name","conversation","country")
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta :
+        model = Feedback
+        fields = '__all__'
 
 class PreferenceSerializer(serializers.ModelSerializer):
     class Meta :

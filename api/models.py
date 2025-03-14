@@ -53,7 +53,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-    
+
+# 
+class Feedback(models.Model):
+    user_reaction = models.TextField(max_length=30)
+    text = models.TextField(blank=True, null=True)
+    pair = models.JSONField(default=list)
+    def __str__(self):
+        return f"Feedback" 
 
 # Preference
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Profile, Preference, MoodLog, Task, Ratio
+from .models import User, Profile, Preference, MoodLog, Task, Ratio, Feedback
 
 # Register your models here.
 
@@ -9,3 +9,4 @@ admin.site.register(Profile)
 admin.site.register(MoodLog)
 admin.site.register(Task)
 admin.site.register(Ratio)
+admin.site.register(Feedback)

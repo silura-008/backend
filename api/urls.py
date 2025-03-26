@@ -12,6 +12,7 @@ urlpatterns = [
     path('get_moodhistory/', get_moodhistory),
     path('get_tasks/',get_tasks),
     path('get_conversation/',get_conversation),
+    path('get_initial/',get_initial),
     path('add_moodlog/', add_moodlog),
     path('clear_conversation/',clear_conversation),
     path('chat/', chat),
